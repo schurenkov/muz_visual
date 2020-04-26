@@ -1,0 +1,22 @@
+{
+  "name": "MuzVisual",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/schurenkov/muz_visual.git",
+  "author": "a.shchurenkov <a.shchurenkov@tinkoff.ru>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "webpack-dev-server"
+  },
+  "dependencies": {
+    "@babel/core": "^7.9.0",
+    "babel-loader": "^8.1.0",
+    "p5": "^1.0.0",
+    "webpack": "^4.43.0",
+    "webpack-dev-server": "^3.10.3"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.9.5",
+    "webpack-cli": "^3.3.11"
+  }
+}
