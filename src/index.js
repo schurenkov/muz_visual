@@ -1,70 +1,87 @@
-import p5 from 'p5';
-import 'p5/lib/addons/p5.sound';
+import * as p5 from 'p5';
+//import 'p5/lib/addons/p5.sound';
 
 const sketch = (s) => {
+    let test = 0;
 
-    s.setup = () => {
-        s.createCanvas(710, 256);
-        s.fill(255, 40, 255);
-       // const filter = new s.p5.LowPass();
+    const callback = (stream) => {
+        var ctx = new AudioContext();
+        var mic = ctx.createMediaStreamSource(stream);
+        var analyser = ctx.createAnalyser();
+        var osc = ctx.createOscillator();
+
+        mic.connect(analyser);
+        osc.connect(ctx.destination);
+       // osc.start(0);
+
+        var data = new Uint8Array(analyser.frequencyBinCount);
+
+        function play() {
+            analyser.getByteFrequencyData(data);
+
+            // get fullest bin
+            var idx = 0;
+            for (var j=0; j < analyser.frequencyBinCount; j++) {
+                if (data[j] > data[idx]) {
+                    idx = j;
+                }
+            }
+
+            test = idx * ctx.sampleRate / analyser.fftSize;
+            console.log(test)
+
+            requestAnimationFrame(play);
+        }
+
+        play();
     }
 
-    s.draw = () => {
+    s.setup = () => {
+        navigator.getUserMedia = navigator.getUserMedia
+            || navigator.webkitGetUserMedia
+            || navigator.mozGetUserMedia;
+
+        navigator.getUserMedia({ video : false, audio : true }, callback, console.log);
+
+
+
+        s.createCanvas(s.windowWidth, s.windowHeight);
         s.background(0);
-        s.circle(10, 10, 10);
+        s.noStroke();
+    }
+
+
+
+    s.draw = () => {
+        // draw background
+        s.fill(0, 30);
+        s.rect(0, 0, s.width, s.height);
+
+        // draw line
+
+        s.noFill()
+
+        var red = s.map(s.random(-100, 100), 0, s.random(-100, 100), 0, 255);
+        var blue = s.map(s.random(-100, 100), 0, s.random(-100, 100), 0, 255);
+        s.stroke(red, 10, blue, 50);
+
+        for (var i = 0; i < 100; i++) {
+            var controlPointX1 = s.windowWidth / 2 + s.random(-test, test);
+            var controlPointY1 = s.windowHeight / 2 + s.random(-test, test);
+            var controlPointX2 = s.windowWidth / 2 + s.random(-test, test);
+            var controlPointY2 = s.windowHeight / 2 + s.random(-test, test);
+
+            //s.stroke(255,50);
+            //s.strokeWeight(s.random(-10, 5));
+
+            s.bezier(
+                s.windowWidth / 2, s.windowHeight / 2,
+                controlPointX1, controlPointY1,
+                controlPointX2, controlPointY2,
+                s.windowWidth / 2 + s.random(0,30), s.windowHeight / 2 + s.random(0, 30));
+
+        }
     }
 }
 
 const sketchInstance = new p5(sketch);
-
-// let soundFile;
-// let fft;
-//
-// let filter, filterFreq, filterRes;
-//
-// function preload() {
-//     soundFormats('mp3', 'ogg');
-//     soundFile = loadSound('assets/beat');
-// }
-//
-// function setup() {
-//     createCanvas(710, 256);
-//     fill(255, 40, 255);
-//
-//     // loop the sound file
-//     soundFile.loop();
-//
-//     filter = new p5.LowPass();
-//
-//     // Disconnect soundfile from master output.
-//     // Then, connect it to the filter, so that we only hear the filtered sound
-//     soundFile.disconnect();
-//     soundFile.connect(filter);
-//
-//     fft = new p5.FFT();
-// }
-//
-// function draw() {
-//     background(30);
-//
-//     // Map mouseX to a the cutoff frequency from the lowest
-//     // frequency (10Hz) to the highest (22050Hz) that humans can hear
-//     filterFreq = map(mouseX, 0, width, 10, 22050);
-//
-//     // Map mouseY to resonance (volume boost) at the cutoff frequency
-//     filterRes = map(mouseY, 0, height, 15, 5);
-//
-//     // set filter parameters
-//     filter.set(filterFreq, filterRes);
-//
-//     // Draw every value in the FFT spectrum analysis where
-//     // x = lowest (10Hz) to highest (22050Hz) frequencies,
-//     // h = energy (amplitude / volume) at that frequency
-//     let spectrum = fft.analyze();
-//     noStroke();
-//     for (let i = 0; i < spectrum.length; i++) {
-//         let x = map(i, 0, spectrum.length, 0, width);
-//         let h = -height + map(spectrum[i], 0, 255, height, 0);
-//         rect(x, height, width / spectrum.length, h);
-//     }
-// }
